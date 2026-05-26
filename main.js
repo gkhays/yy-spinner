@@ -18,12 +18,15 @@ let selectedFps = parseInt(document.querySelector('input[name="fps"]:checked').v
 let lastFrameTime = 0;
 let touchStartY = null;
 let touchStartX = null;
+let lastFidgetSwipeTime = 0;
 
 const minDegreesPerFrame = 2.2;
 const maxDegreesPerFrame = 360;
 const demoAccelerationPerSecond = 30; // Preserves legacy 60fps * 0.5 acceleration
 const fidgetSwipeBoost = 8;
 const fidgetSwipeThreshold = 40;
+const fidgetSwipeIdleDelayMs = 200;
+const fidgetDecelerationPerSecond = 2.4;
 const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
 function resizeCanvas() {
@@ -118,10 +121,25 @@ function animate(timestamp) {
     rpmSlider.value = degreesPerFrame;
   }
 
+  if (fidgetMode) {
+    const isSwipeIdle = lastFidgetSwipeTime === 0 || timestamp - lastFidgetSwipeTime > fidgetSwipeIdleDelayMs;
+    if (isSwipeIdle && degreesPerFrame > 0) {
+      const decelerationPerFrame = fidgetDecelerationPerSecond / selectedFps;
+      degreesPerFrame = Math.max(0, degreesPerFrame - decelerationPerFrame);
+      rpmSlider.value = degreesPerFrame;
+    }
+  }
+
   updateMetrics();
 
   angle += degreesPerFrame * (Math.PI / 180);
   drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
+
+  if (fidgetMode && degreesPerFrame === 0) {
+    spinning = false;
+    return;
+  }
+
   requestAnimationFrame(animate);
 }
 
@@ -159,14 +177,14 @@ function setFidgetMode(enabled) {
 
   if (enabled) {
     demoMode = false;
-    spinning = true;
-    degreesPerFrame = minDegreesPerFrame;
-    rpmSlider.value = minDegreesPerFrame;
-    spinBtn.textContent = 'Stop';
+    spinning = false;
+    degreesPerFrame = 0;
+    rpmSlider.value = 0;
+    spinBtn.textContent = 'Spin';
     spinBtn.disabled = true;
     rpmSlider.disabled = true;
+    lastFidgetSwipeTime = 0;
     updateMetrics();
-    requestAnimationFrame(animate);
     return;
   }
 
@@ -178,6 +196,7 @@ function handleFidgetSwipe() {
 
   degreesPerFrame = Math.min(maxDegreesPerFrame, degreesPerFrame + fidgetSwipeBoost);
   rpmSlider.value = degreesPerFrame;
+  lastFidgetSwipeTime = performance.now();
 
   if (!spinning) {
     spinning = true;
