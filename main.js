@@ -24,6 +24,7 @@ let touchStartY = null;
 let touchStartX = null;
 let lastFidgetSwipeTime = 0;
 let spiralCache = null;
+let ignoreNextMenuClick = false;
 
 const minDegreesPerFrame = 2.2;
 const maxDegreesPerFrame = 360;
@@ -202,6 +203,11 @@ function setMenuOpen(isOpen) {
   document.body.classList.toggle('menu-open', isOpen);
 }
 
+function toggleMenu() {
+  const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+  setMenuOpen(!isOpen);
+}
+
 function animate(timestamp) {
   if (!spinning) return;
 
@@ -333,9 +339,20 @@ canvas.addEventListener('touchend', (e) => {
   }
 }, { passive: false });
 
+menuToggle.addEventListener('pointerup', (e) => {
+  if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+
+  ignoreNextMenuClick = true;
+  toggleMenu();
+});
+
 menuToggle.addEventListener('click', () => {
-  const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
-  setMenuOpen(!isOpen);
+  if (ignoreNextMenuClick) {
+    ignoreNextMenuClick = false;
+    return;
+  }
+
+  toggleMenu();
 });
 
 spinnerSelect.addEventListener('change', (e) => {
@@ -344,7 +361,7 @@ spinnerSelect.addEventListener('change', (e) => {
   setMenuOpen(false);
 });
 
-document.addEventListener('click', (e) => {
+document.addEventListener('pointerdown', (e) => {
   const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
   if (!isOpen) return;
 

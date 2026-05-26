@@ -35,6 +35,8 @@ body.menu-open {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 10px 24px rgba(23, 21, 21, 0.12);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .menu-toggle span {
@@ -110,6 +112,8 @@ body.menu-open {
   background: #fffdf9;
   color: #191f23;
   font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .github-fork-link {
