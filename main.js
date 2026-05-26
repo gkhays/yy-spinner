@@ -26,7 +26,8 @@ const demoAccelerationPerSecond = 30; // Preserves legacy 60fps * 0.5 accelerati
 const fidgetSwipeBoost = 8;
 const fidgetSwipeThreshold = 40;
 const fidgetSwipeIdleDelayMs = 200;
-const fidgetDecelerationPerSecond = 2.4;
+const fidgetDecayPerSecond = 0.35;
+const fidgetStopThreshold = 0.05;
 const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
 function resizeCanvas() {
@@ -124,8 +125,12 @@ function animate(timestamp) {
   if (fidgetMode) {
     const isSwipeIdle = lastFidgetSwipeTime === 0 || timestamp - lastFidgetSwipeTime > fidgetSwipeIdleDelayMs;
     if (isSwipeIdle && degreesPerFrame > 0) {
-      const decelerationPerFrame = fidgetDecelerationPerSecond / selectedFps;
-      degreesPerFrame = Math.max(0, degreesPerFrame - decelerationPerFrame);
+      // Friction-style decay feels more natural for repeated touch swipes.
+      const decayPerFrame = Math.pow(fidgetDecayPerSecond, 1 / selectedFps);
+      degreesPerFrame *= decayPerFrame;
+      if (degreesPerFrame < fidgetStopThreshold) {
+        degreesPerFrame = 0;
+      }
       rpmSlider.value = degreesPerFrame;
     }
   }
