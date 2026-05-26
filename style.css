@@ -100,6 +100,73 @@ canvas {
   justify-content: center;
 }
 
+.controls-row-fidget {
+  justify-content: center;
+}
+
+.switch-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-control input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-track {
+  position: relative;
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  background: #b9b7b5;
+  border: 1px solid #9f9d9b;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.switch-track::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+  transition: transform 180ms ease;
+}
+
+.switch-control input:checked + .switch-track {
+  background: #33312f;
+  border-color: #1d1b19;
+}
+
+.switch-control input:checked + .switch-track::before {
+  transform: translateX(22px);
+}
+
+.switch-control input:focus-visible + .switch-track {
+  outline: 3px solid rgba(36, 41, 47, 0.25);
+  outline-offset: 2px;
+}
+
+.switch-label {
+  font-weight: 600;
+}
+
+body.fidget-mode .controls-row:not(.controls-row-fidget) {
+  display: none;
+}
+
+body.fidget-mode #yy-canvas {
+  touch-action: none;
+}
+
 .control-inline {
   display: inline-flex;
   align-items: center;
