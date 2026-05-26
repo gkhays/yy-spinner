@@ -81,22 +81,41 @@ function drawTriSpinner(cx, cy, r, rotation) {
   const armDistance = r * 0.61;
   const lobeRadius = r * 0.36;
   const centerRadius = r * 0.24;
+  const armAngles = [
+    -Math.PI / 2,
+    -Math.PI / 2 + (2 * Math.PI) / 3,
+    -Math.PI / 2 + (4 * Math.PI) / 3,
+  ];
 
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rotation);
 
-  // Spinner body silhouette: center hub and three rounded lobes.
+  // Draw the core body with simple filled primitives to avoid iOS path-fill glitches.
   ctx.fillStyle = '#3ec34a';
+
   ctx.beginPath();
-  for (let i = 0; i < 3; i += 1) {
-    const theta = -Math.PI / 2 + i * ((2 * Math.PI) / 3);
+  armAngles.forEach((theta, index) => {
     const x = Math.cos(theta) * armDistance;
     const y = Math.sin(theta) * armDistance;
-    ctx.moveTo(x + lobeRadius, y);
+    if (index === 0) {
+      ctx.moveTo(x, y);
+      return;
+    }
+    ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fill();
+
+  armAngles.forEach((theta) => {
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    ctx.beginPath();
     ctx.arc(x, y, lobeRadius, 0, 2 * Math.PI);
-  }
-  ctx.moveTo(centerRadius, 0);
+    ctx.fill();
+  });
+
+  ctx.beginPath();
   ctx.arc(0, 0, centerRadius, 0, 2 * Math.PI);
   ctx.fill();
 
@@ -129,7 +148,7 @@ function drawTriSpinner(cx, cy, r, rotation) {
 
   const bearingRadius = r * 0.19;
   for (let i = 0; i < 3; i += 1) {
-    const theta = -Math.PI / 2 + i * ((2 * Math.PI) / 3);
+    const theta = armAngles[i];
     const x = Math.cos(theta) * armDistance;
     const y = Math.sin(theta) * armDistance;
     drawBearing(x, y, bearingRadius);
