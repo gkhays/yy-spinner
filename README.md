@@ -1,11 +1,13 @@
 # Yin-Yang Spinner
 
-A simple JavaScript web app that draws a Yin and Yang symbol on a canvas. Click the **Spin** button to rotate the symbol clockwise. Adjust the RPM (revolutions per minute) with the slider (default: 30 RPM).
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=000)
+
+A simple JavaScript web app that draws a Yin and Yang symbol on a canvas. Click the **Spin** button to rotate the symbol clockwise. Adjust the RPM (revolutions per minute) with the slider (default: 11 RPM).
 
 ## Features
 - Draws a Yin-Yang symbol on an HTML5 canvas
 - Spin button toggles rotation
-- RPM slider (5–720, default 30)
+- RPM slider (11–1350, default 11)
 
 ## Getting Started
 
@@ -29,3 +31,7 @@ A simple JavaScript web app that draws a Yin and Yang symbol on a canvas. Click 
 
 ## License
 MIT
+
+## Acknowledgements
+
+https://youtube.com/shorts/COAGSB5dCBE?si=oPKNRMntsAcfOhKt

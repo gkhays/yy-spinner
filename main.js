@@ -3,11 +3,41 @@ const ctx = canvas.getContext('2d');
 const spinBtn = document.getElementById('spin-btn');
 const rpmSlider = document.getElementById('rpm-slider');
 const rpmValue = document.getElementById('rpm-value');
+const degreesPerFrameValue = document.getElementById('degrees-per-frame-value');
+const demoToggle = document.getElementById('demo-toggle');
+const fpsOptions = document.querySelectorAll('input[name="fps"]');
 
 let spinning = false;
 let angle = 0;
-let lastTimestamp = null;
-let rpm = 30;
+let degreesPerFrame = 2.2;
+let demoMode = demoToggle.checked;
+let selectedFps = parseInt(document.querySelector('input[name="fps"]:checked').value, 10);
+let lastFrameTime = 0;
+
+const minDegreesPerFrame = 2.2;
+const maxDegreesPerFrame = 360;
+const demoAccelerationPerSecond = 30; // Preserves legacy 60fps * 0.5 acceleration
+
+function resizeCanvas() {
+  const maxCanvasSize = 400;
+  const minCanvasSize = 220;
+  const horizontalPadding = 24;
+  const availableWidth = window.innerWidth - horizontalPadding;
+  const size = Math.max(minCanvasSize, Math.min(maxCanvasSize, Math.floor(availableWidth)));
+
+  canvas.width = size;
+  canvas.height = size;
+  drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
+}
+
+function degreesPerFrameToRpm(dpf) {
+  return (dpf * selectedFps) / 6;
+}
+
+function updateMetrics() {
+  rpmValue.textContent = Math.round(degreesPerFrameToRpm(degreesPerFrame));
+  degreesPerFrameValue.textContent = degreesPerFrame.toFixed(2);
+}
 
 function drawYinYang(cx, cy, r, rotation) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -64,32 +94,79 @@ function drawYinYang(cx, cy, r, rotation) {
   ctx.restore();
 }
 
-function animate(ts) {
+function animate(timestamp) {
   if (!spinning) return;
-  if (!lastTimestamp) lastTimestamp = ts;
-  const delta = ts - lastTimestamp;
-  lastTimestamp = ts;
-  // Convert RPM to radians per ms
-  const radPerMs = (rpm * 2 * Math.PI) / 60000;
-  angle += radPerMs * delta;
+
+  const frameIntervalMs = 1000 / selectedFps;
+  if (lastFrameTime !== 0 && timestamp - lastFrameTime < frameIntervalMs) {
+    requestAnimationFrame(animate);
+    return;
+  }
+  lastFrameTime = timestamp;
+
+  if (demoMode && degreesPerFrame < maxDegreesPerFrame) {
+    const demoAccelerationPerFrame = demoAccelerationPerSecond / selectedFps;
+    degreesPerFrame = Math.min(maxDegreesPerFrame, degreesPerFrame + demoAccelerationPerFrame);
+    rpmSlider.value = degreesPerFrame;
+  }
+
+  updateMetrics();
+
+  angle += degreesPerFrame * (Math.PI / 180);
   drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
   requestAnimationFrame(animate);
+}
+
+function setDemoMode(enabled) {
+  demoMode = enabled;
+  spinBtn.disabled = enabled;
+  rpmSlider.disabled = enabled;
+  lastFrameTime = 0;
+
+  if (enabled) {
+    degreesPerFrame = minDegreesPerFrame;
+    rpmSlider.value = minDegreesPerFrame;
+    spinning = true;
+    spinBtn.textContent = 'Stop';
+    requestAnimationFrame(animate);
+    return;
+  }
+
+  spinning = false;
+  degreesPerFrame = minDegreesPerFrame;
+  spinBtn.textContent = 'Spin';
+  rpmSlider.value = minDegreesPerFrame;
+  updateMetrics();
 }
 
 spinBtn.addEventListener('click', () => {
   spinning = !spinning;
   spinBtn.textContent = spinning ? 'Stop' : 'Spin';
-  lastTimestamp = null;
+  lastFrameTime = 0;
   if (spinning) {
     requestAnimationFrame(animate);
   }
 });
 
 rpmSlider.addEventListener('input', (e) => {
-  rpm = parseInt(e.target.value, 10);
-  rpmValue.textContent = rpm;
+  degreesPerFrame = parseFloat(e.target.value);
+  updateMetrics();
+});
+
+demoToggle.addEventListener('change', (e) => {
+  setDemoMode(e.target.checked);
+});
+
+fpsOptions.forEach((option) => {
+  option.addEventListener('change', (e) => {
+    selectedFps = parseInt(e.target.value, 10);
+    lastFrameTime = 0;
+    updateMetrics();
+  });
 });
 
 // Initial draw
-rpmValue.textContent = rpm;
-drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
+updateMetrics();
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+setDemoMode(demoMode);

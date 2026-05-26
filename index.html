@@ -10,9 +10,33 @@
   <h1>Yin-Yang Spinner</h1>
   <canvas id="yy-canvas" width="400" height="400"></canvas>
   <div class="controls">
-    <button id="spin-btn">Spin</button>
-    <label for="rpm-slider">RPM: <span id="rpm-value">30</span></label>
-    <input type="range" id="rpm-slider" min="5" max="720" value="30">
+    <div class="controls-row controls-row-primary">
+      <label for="demo-toggle" class="control-inline">
+        <input type="checkbox" id="demo-toggle" checked>
+        Demo
+      </label>
+      <fieldset class="fps-group" aria-label="Frames per second">
+        <legend>FPS</legend>
+        <label for="fps-30">
+          <input type="radio" id="fps-30" name="fps" value="30" checked>
+          30
+        </label>
+        <label for="fps-60">
+          <input type="radio" id="fps-60" name="fps" value="60">
+          60
+        </label>
+      </fieldset>
+    </div>
+    <div class="controls-row controls-row-secondary">
+      <button id="spin-btn">Spin</button>
+      <div class="metrics">
+        <label for="rpm-slider">RPM: <span id="rpm-value">22</span></label>
+        <span>Degrees/frame: <span id="degrees-per-frame-value">2.20</span></span>
+      </div>
+    </div>
+    <div class="controls-row controls-row-slider">
+      <input type="range" id="rpm-slider" min="2.2" max="360" step="0.1" value="2.2">
+    </div>
   </div>
   <script src="main.js"></script>
 </body>
