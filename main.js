@@ -36,14 +36,29 @@ const fidgetDecayPerSecond = 0.35;
 const fidgetStopThreshold = 0.05;
 const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
-function syncSelectedSpinnerFromSelect() {
-  const nextSpinner = spinnerSelect.value;
-  if (nextSpinner === selectedSpinner) {
-    return false;
-  }
+function getSelectedSpinnerValue() {
+  const selectedOption = spinnerSelect.options[spinnerSelect.selectedIndex];
+  return (selectedOption && selectedOption.value) || spinnerSelect.value || selectedSpinner;
+}
+
+function applySpinnerSelection(closeMenu = false) {
+  const nextSpinner = getSelectedSpinnerValue();
+  const hasChanged = nextSpinner !== selectedSpinner;
 
   selectedSpinner = nextSpinner;
-  return true;
+
+  if (hasChanged || !spinning) {
+    drawCurrentSpinner();
+  }
+
+  if (closeMenu) {
+    setMenuOpen(false);
+    // iOS can commit select value after the event microtask; redraw once more next frame.
+    requestAnimationFrame(() => {
+      selectedSpinner = getSelectedSpinnerValue();
+      drawCurrentSpinner();
+    });
+  }
 }
 
 function resizeCanvas() {
@@ -68,6 +83,8 @@ function updateMetrics() {
 }
 
 function drawCurrentSpinner() {
+  selectedSpinner = getSelectedSpinnerValue();
+
   const cx = canvas.width / 2;
   const cy = canvas.height / 2;
   const radius = Math.min(canvas.width, canvas.height) * 0.45;
@@ -301,6 +318,13 @@ function setMenuOpen(isOpen) {
   menuToggle.setAttribute('aria-expanded', String(isOpen));
   spinnerMenu.setAttribute('aria-hidden', String(!isOpen));
   document.body.classList.toggle('menu-open', isOpen);
+
+  if (!isOpen) {
+    requestAnimationFrame(() => {
+      selectedSpinner = getSelectedSpinnerValue();
+      drawCurrentSpinner();
+    });
+  }
 }
 
 function toggleMenu() {
@@ -310,8 +334,6 @@ function toggleMenu() {
 
 function animate(timestamp) {
   if (!spinning) return;
-
-  syncSelectedSpinnerFromSelect();
 
   const frameIntervalMs = 1000 / selectedFps;
   if (lastFrameTime !== 0 && timestamp - lastFrameTime < frameIntervalMs) {
@@ -457,16 +479,18 @@ menuToggle.addEventListener('click', () => {
   toggleMenu();
 });
 
-spinnerSelect.addEventListener('change', (e) => {
-  selectedSpinner = e.target.value;
-  drawCurrentSpinner();
-  setMenuOpen(false);
+spinnerSelect.addEventListener('change', () => {
+  applySpinnerSelection(true);
 });
 
 spinnerSelect.addEventListener('input', () => {
-  if (syncSelectedSpinnerFromSelect()) {
-    drawCurrentSpinner();
-  }
+  applySpinnerSelection(false);
+});
+
+spinnerSelect.addEventListener('touchend', () => {
+  requestAnimationFrame(() => {
+    applySpinnerSelection(false);
+  });
 });
 
 document.addEventListener('pointerdown', (e) => {
