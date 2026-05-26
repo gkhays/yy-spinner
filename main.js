@@ -69,7 +69,78 @@ function drawCurrentSpinner() {
     return;
   }
 
+  if (selectedSpinner === 'tri-spinner') {
+    drawTriSpinner(cx, cy, radius, angle);
+    return;
+  }
+
   drawYinYang(cx, cy, radius, angle);
+}
+
+function drawTriSpinner(cx, cy, r, rotation) {
+  const armDistance = r * 0.61;
+  const lobeRadius = r * 0.36;
+  const centerRadius = r * 0.24;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  // Spinner body silhouette: center hub and three rounded lobes.
+  ctx.fillStyle = '#3ec34a';
+  ctx.beginPath();
+  for (let i = 0; i < 3; i += 1) {
+    const theta = -Math.PI / 2 + i * ((2 * Math.PI) / 3);
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    ctx.moveTo(x + lobeRadius, y);
+    ctx.arc(x, y, lobeRadius, 0, 2 * Math.PI);
+  }
+  ctx.moveTo(centerRadius, 0);
+  ctx.arc(0, 0, centerRadius, 0, 2 * Math.PI);
+  ctx.fill();
+
+  const drawBearing = (x, y, baseRadius) => {
+    const outerR = baseRadius;
+    const ringR = baseRadius * 0.78;
+    const innerRingR = baseRadius * 0.5;
+    const coreR = baseRadius * 0.32;
+
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#181a1f';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, ringR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#d7dadd';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, innerRingR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#272a2f';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, coreR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#eceef0';
+    ctx.fill();
+  };
+
+  const bearingRadius = r * 0.19;
+  for (let i = 0; i < 3; i += 1) {
+    const theta = -Math.PI / 2 + i * ((2 * Math.PI) / 3);
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    drawBearing(x, y, bearingRadius);
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, centerRadius * 0.66, 0, 2 * Math.PI);
+  ctx.fillStyle = '#57cc5b';
+  ctx.fill();
+
+  ctx.restore();
 }
 
 function drawYinYang(cx, cy, r, rotation) {
