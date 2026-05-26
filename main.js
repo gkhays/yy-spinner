@@ -11,6 +11,7 @@ const controlsPanel = document.querySelector('.controls');
 const menuToggle = document.getElementById('menu-toggle');
 const spinnerMenu = document.getElementById('spinner-menu');
 const spinnerSelect = document.getElementById('spinner-select');
+const spinnerTitle = document.getElementById('spinner-title');
 
 let spinning = false;
 let angle = 0;
@@ -41,11 +42,29 @@ function getSelectedSpinnerValue() {
   return (selectedOption && selectedOption.value) || spinnerSelect.value || selectedSpinner;
 }
 
+function getSelectedSpinnerLabel() {
+  const selectedOption = spinnerSelect.options[spinnerSelect.selectedIndex];
+  const fallbackLabel = selectedSpinner || 'Spinner';
+  return (selectedOption && selectedOption.textContent && selectedOption.textContent.trim()) || fallbackLabel;
+}
+
+function updateSpinnerTitle() {
+  const label = getSelectedSpinnerLabel();
+  const titleText = `${label} Spinner`;
+
+  if (spinnerTitle) {
+    spinnerTitle.textContent = titleText;
+  }
+
+  document.title = titleText;
+}
+
 function applySpinnerSelection(closeMenu = false) {
   const nextSpinner = getSelectedSpinnerValue();
   const hasChanged = nextSpinner !== selectedSpinner;
 
   selectedSpinner = nextSpinner;
+  updateSpinnerTitle();
 
   if (hasChanged || !spinning) {
     drawCurrentSpinner();
@@ -56,6 +75,7 @@ function applySpinnerSelection(closeMenu = false) {
     // iOS can commit select value after the event microtask; redraw once more next frame.
     requestAnimationFrame(() => {
       selectedSpinner = getSelectedSpinnerValue();
+      updateSpinnerTitle();
       drawCurrentSpinner();
     });
   }
@@ -322,6 +342,7 @@ function setMenuOpen(isOpen) {
   if (!isOpen) {
     requestAnimationFrame(() => {
       selectedSpinner = getSelectedSpinnerValue();
+      updateSpinnerTitle();
       drawCurrentSpinner();
     });
   }
@@ -545,3 +566,4 @@ window.addEventListener('resize', resizeCanvas);
 setDemoMode(demoMode);
 setFidgetMode(fidgetMode);
 setMenuOpen(false);
+updateSpinnerTitle();
