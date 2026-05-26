@@ -21,12 +21,11 @@
   <div class="controls">
     <div class="controls-row controls-row-fidget">
       <label for="fidget-toggle" class="switch-control" aria-label="Toggle fidget mode">
-        <input type="checkbox" id="fidget-toggle">
-        <span class="switch-track" aria-hidden="true"></span>
+        <input type="checkbox" id="fidget-toggle" role="switch" aria-label="Fidget mode">
         <span class="switch-label">Fidget mode</span>
       </label>
     </div>
-    <div class="controls-row controls-row-primary">
+    <div class="controls-row controls-row-primary controls-row-hideable">
       <label for="demo-toggle" class="control-inline">
         <input type="checkbox" id="demo-toggle" checked>
         Demo
@@ -43,14 +42,14 @@
         </label>
       </fieldset>
     </div>
-    <div class="controls-row controls-row-secondary">
+    <div class="controls-row controls-row-secondary controls-row-hideable">
       <button id="spin-btn">Spin</button>
       <div class="metrics">
         <label for="rpm-slider">RPM: <span id="rpm-value">22</span></label>
         <span>Degrees/frame: <span id="degrees-per-frame-value">2.20</span></span>
       </div>
     </div>
-    <div class="controls-row controls-row-slider">
+    <div class="controls-row controls-row-slider controls-row-hideable">
       <input type="range" id="rpm-slider" min="2.2" max="360" step="0.1" value="2.2">
     </div>
   </div>

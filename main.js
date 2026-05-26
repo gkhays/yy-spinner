@@ -7,6 +7,7 @@ const degreesPerFrameValue = document.getElementById('degrees-per-frame-value');
 const demoToggle = document.getElementById('demo-toggle');
 const fpsOptions = document.querySelectorAll('input[name="fps"]');
 const fidgetToggle = document.getElementById('fidget-toggle');
+const controlsPanel = document.querySelector('.controls');
 
 let spinning = false;
 let angle = 0;
@@ -149,6 +150,7 @@ function setDemoMode(enabled) {
 function setFidgetMode(enabled) {
   fidgetMode = enabled;
   document.body.classList.toggle('fidget-mode', enabled);
+  controlsPanel.classList.toggle('fidget-mode-active', enabled);
   demoToggle.disabled = enabled;
   fpsOptions.forEach((option) => {
     option.disabled = enabled;
