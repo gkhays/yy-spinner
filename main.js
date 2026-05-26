@@ -35,7 +35,6 @@ const fidgetSwipeThreshold = 40;
 const fidgetSwipeIdleDelayMs = 200;
 const fidgetDecayPerSecond = 0.35;
 const fidgetStopThreshold = 0.05;
-const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
 function getSelectedSpinnerValue() {
   const selectedOption = spinnerSelect.options[spinnerSelect.selectedIndex];
@@ -450,7 +449,7 @@ function setFidgetMode(enabled) {
 }
 
 function handleFidgetSwipe() {
-  if (!fidgetMode || !isIphoneOrAndroid) return;
+  if (!fidgetMode) return;
 
   degreesPerFrame = Math.min(maxDegreesPerFrame, degreesPerFrame + fidgetSwipeBoost);
   rpmSlider.value = degreesPerFrame;
@@ -467,15 +466,20 @@ function handleFidgetSwipe() {
 }
 
 canvas.addEventListener('touchstart', (e) => {
-  if (!fidgetMode || !isIphoneOrAndroid || e.touches.length === 0) return;
+  if (!fidgetMode || e.touches.length === 0) return;
 
   const touch = e.touches[0];
   touchStartY = touch.clientY;
   touchStartX = touch.clientX;
 }, { passive: true });
 
+canvas.addEventListener('touchmove', (e) => {
+  if (!fidgetMode || touchStartY === null) return;
+  e.preventDefault();
+}, { passive: false });
+
 canvas.addEventListener('touchend', (e) => {
-  if (!fidgetMode || !isIphoneOrAndroid || touchStartY === null || e.changedTouches.length === 0) return;
+  if (!fidgetMode || touchStartY === null || e.changedTouches.length === 0) return;
 
   const touch = e.changedTouches[0];
   const deltaY = touchStartY - touch.clientY;
