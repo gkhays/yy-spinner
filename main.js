@@ -36,6 +36,16 @@ const fidgetDecayPerSecond = 0.35;
 const fidgetStopThreshold = 0.05;
 const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
+function syncSelectedSpinnerFromSelect() {
+  const nextSpinner = spinnerSelect.value;
+  if (nextSpinner === selectedSpinner) {
+    return false;
+  }
+
+  selectedSpinner = nextSpinner;
+  return true;
+}
+
 function resizeCanvas() {
   const maxCanvasSize = 400;
   const minCanvasSize = 220;
@@ -301,6 +311,8 @@ function toggleMenu() {
 function animate(timestamp) {
   if (!spinning) return;
 
+  syncSelectedSpinnerFromSelect();
+
   const frameIntervalMs = 1000 / selectedFps;
   if (lastFrameTime !== 0 && timestamp - lastFrameTime < frameIntervalMs) {
     requestAnimationFrame(animate);
@@ -449,6 +461,12 @@ spinnerSelect.addEventListener('change', (e) => {
   selectedSpinner = e.target.value;
   drawCurrentSpinner();
   setMenuOpen(false);
+});
+
+spinnerSelect.addEventListener('input', () => {
+  if (syncSelectedSpinnerFromSelect()) {
+    drawCurrentSpinner();
+  }
 });
 
 document.addEventListener('pointerdown', (e) => {
