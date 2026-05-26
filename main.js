@@ -8,17 +8,24 @@ const demoToggle = document.getElementById('demo-toggle');
 const fpsOptions = document.querySelectorAll('input[name="fps"]');
 const fidgetToggle = document.getElementById('fidget-toggle');
 const controlsPanel = document.querySelector('.controls');
+const menuToggle = document.getElementById('menu-toggle');
+const spinnerMenu = document.getElementById('spinner-menu');
+const spinnerSelect = document.getElementById('spinner-select');
+const spinnerTitle = document.getElementById('spinner-title');
 
 let spinning = false;
 let angle = 0;
 let degreesPerFrame = 2.2;
 let demoMode = demoToggle.checked;
 let fidgetMode = fidgetToggle.checked;
+let selectedSpinner = spinnerSelect.value;
 let selectedFps = parseInt(document.querySelector('input[name="fps"]:checked').value, 10);
 let lastFrameTime = 0;
 let touchStartY = null;
 let touchStartX = null;
 let lastFidgetSwipeTime = 0;
+let spiralCache = null;
+let ignoreNextMenuClick = false;
 
 const minDegreesPerFrame = 2.2;
 const maxDegreesPerFrame = 360;
@@ -30,6 +37,57 @@ const fidgetDecayPerSecond = 0.35;
 const fidgetStopThreshold = 0.05;
 const isIphoneOrAndroid = /iphone|android/i.test(window.navigator.userAgent);
 
+function getSelectedSpinnerValue() {
+  const selectedOption = spinnerSelect.options[spinnerSelect.selectedIndex];
+  return (selectedOption && selectedOption.value) || spinnerSelect.value || selectedSpinner;
+}
+
+function getSpinnerLabelByValue(value) {
+  const match = Array.from(spinnerSelect.options).find((option) => option.value === value);
+  const fallbackLabel = value || 'Spinner';
+  return (match && match.textContent && match.textContent.trim()) || fallbackLabel;
+}
+
+function updateSpinnerTitle(spinnerValue = selectedSpinner) {
+  const label = getSpinnerLabelByValue(spinnerValue);
+  const titleText = `${label} Spinner`;
+
+  if (spinnerTitle) {
+    spinnerTitle.textContent = titleText;
+  }
+
+  document.title = titleText;
+}
+
+function syncSpinnerUiFromSelection() {
+  selectedSpinner = getSelectedSpinnerValue();
+  updateSpinnerTitle(selectedSpinner);
+  drawCurrentSpinner();
+}
+
+function applySpinnerSelection(closeMenu = false) {
+  const nextSpinner = getSelectedSpinnerValue();
+  const hasChanged = nextSpinner !== selectedSpinner;
+
+  selectedSpinner = nextSpinner;
+  updateSpinnerTitle(selectedSpinner);
+
+  if (hasChanged || !spinning) {
+    drawCurrentSpinner();
+  }
+
+  if (closeMenu) {
+    setMenuOpen(false);
+    // iOS can commit select value after the event microtask; redraw once more next frame.
+    requestAnimationFrame(() => {
+      syncSpinnerUiFromSelection();
+    });
+    // Some iPhone Safari versions commit picker values after additional delay.
+    setTimeout(syncSpinnerUiFromSelection, 120);
+    setTimeout(syncSpinnerUiFromSelection, 280);
+  }
+}
+
 function resizeCanvas() {
   const maxCanvasSize = 400;
   const minCanvasSize = 220;
@@ -39,7 +97,7 @@ function resizeCanvas() {
 
   canvas.width = size;
   canvas.height = size;
-  drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
+  drawCurrentSpinner();
 }
 
 function degreesPerFrameToRpm(dpf) {
@@ -51,8 +109,114 @@ function updateMetrics() {
   degreesPerFrameValue.textContent = degreesPerFrame.toFixed(2);
 }
 
-function drawYinYang(cx, cy, r, rotation) {
+function drawCurrentSpinner() {
+  selectedSpinner = getSelectedSpinnerValue();
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const radius = Math.min(canvas.width, canvas.height) * 0.45;
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (selectedSpinner === 'spiral') {
+    drawSpiral(cx, cy, radius, angle);
+    return;
+  }
+
+  if (selectedSpinner === 'tri-spinner') {
+    drawTriSpinner(cx, cy, radius, angle);
+    return;
+  }
+
+  drawYinYang(cx, cy, radius, angle);
+}
+
+function drawTriSpinner(cx, cy, r, rotation) {
+  const armDistance = r * 0.61;
+  const lobeRadius = r * 0.36;
+  const centerRadius = r * 0.24;
+  const armAngles = [
+    -Math.PI / 2,
+    -Math.PI / 2 + (2 * Math.PI) / 3,
+    -Math.PI / 2 + (4 * Math.PI) / 3,
+  ];
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+
+  // Draw the core body with simple filled primitives to avoid iOS path-fill glitches.
+  ctx.fillStyle = '#3ec34a';
+
+  ctx.beginPath();
+  armAngles.forEach((theta, index) => {
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    if (index === 0) {
+      ctx.moveTo(x, y);
+      return;
+    }
+    ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fill();
+
+  armAngles.forEach((theta) => {
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    ctx.beginPath();
+    ctx.arc(x, y, lobeRadius, 0, 2 * Math.PI);
+    ctx.fill();
+  });
+
+  ctx.beginPath();
+  ctx.arc(0, 0, centerRadius, 0, 2 * Math.PI);
+  ctx.fill();
+
+  const drawBearing = (x, y, baseRadius) => {
+    const outerR = baseRadius;
+    const ringR = baseRadius * 0.78;
+    const innerRingR = baseRadius * 0.5;
+    const coreR = baseRadius * 0.32;
+
+    ctx.beginPath();
+    ctx.arc(x, y, outerR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#181a1f';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, ringR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#d7dadd';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, innerRingR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#272a2f';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(x, y, coreR, 0, 2 * Math.PI);
+    ctx.fillStyle = '#eceef0';
+    ctx.fill();
+  };
+
+  const bearingRadius = r * 0.19;
+  for (let i = 0; i < 3; i += 1) {
+    const theta = armAngles[i];
+    const x = Math.cos(theta) * armDistance;
+    const y = Math.sin(theta) * armDistance;
+    drawBearing(x, y, bearingRadius);
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, centerRadius * 0.66, 0, 2 * Math.PI);
+  ctx.fillStyle = '#57cc5b';
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawYinYang(cx, cy, r, rotation) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(rotation);
@@ -106,6 +270,95 @@ function drawYinYang(cx, cy, r, rotation) {
   ctx.restore();
 }
 
+function drawSpiral(cx, cy, r, rotation) {
+  const spiralTexture = getSpiralTexture(r);
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  ctx.drawImage(spiralTexture, -r, -r, r * 2, r * 2);
+
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, 2 * Math.PI);
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = Math.max(3, r * 0.045);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function getSpiralTexture(radius) {
+  const diameter = Math.max(1, Math.round(radius * 2));
+
+  if (spiralCache && spiralCache.diameter === diameter) {
+    return spiralCache.canvas;
+  }
+
+  const spiralCanvas = document.createElement('canvas');
+  spiralCanvas.width = diameter;
+  spiralCanvas.height = diameter;
+
+  const spiralCtx = spiralCanvas.getContext('2d');
+  const image = spiralCtx.createImageData(diameter, diameter);
+  const data = image.data;
+  const center = diameter / 2;
+  const epsilon = 0.0025;
+  const armCount = 14;
+  const swirlStrength = 10.5;
+  const extraArcRadians = 25 * (Math.PI / 180);
+  const red = [216, 23, 23];
+  const white = [255, 253, 249];
+
+  for (let y = 0; y < diameter; y += 1) {
+    for (let x = 0; x < diameter; x += 1) {
+      const dx = (x + 0.5 - center) / radius;
+      const dy = (y + 0.5 - center) / radius;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const index = (y * diameter + x) * 4;
+
+      if (distance > 1) {
+        data[index + 3] = 0;
+        continue;
+      }
+
+      const theta = Math.atan2(dy, dx);
+      const armTheta = theta + extraArcRadians * (1 - distance);
+      const phase = armCount * armTheta + swirlStrength * Math.log(distance + epsilon);
+      const stripeMix = 0.5 + 0.5 * Math.sin(phase);
+      const edgeBlend = Math.min(1, Math.max(0, (1 - distance) * 18));
+      const color = stripeMix >= 0.5 ? red : white;
+
+      data[index] = color[0];
+      data[index + 1] = color[1];
+      data[index + 2] = color[2];
+      data[index + 3] = Math.round(255 * edgeBlend);
+    }
+  }
+
+  spiralCtx.putImageData(image, 0, 0);
+  spiralCache = { diameter, canvas: spiralCanvas };
+
+  return spiralCanvas;
+}
+
+function setMenuOpen(isOpen) {
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  spinnerMenu.setAttribute('aria-hidden', String(!isOpen));
+  document.body.classList.toggle('menu-open', isOpen);
+
+  if (!isOpen) {
+    requestAnimationFrame(() => {
+      syncSpinnerUiFromSelection();
+    });
+    setTimeout(syncSpinnerUiFromSelection, 120);
+  }
+}
+
+function toggleMenu() {
+  const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+  setMenuOpen(!isOpen);
+}
+
 function animate(timestamp) {
   if (!spinning) return;
 
@@ -138,7 +391,7 @@ function animate(timestamp) {
   updateMetrics();
 
   angle += degreesPerFrame * (Math.PI / 180);
-  drawYinYang(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.45, angle);
+  drawCurrentSpinner();
 
   if (fidgetMode && degreesPerFrame === 0) {
     spinning = false;
@@ -237,6 +490,55 @@ canvas.addEventListener('touchend', (e) => {
   }
 }, { passive: false });
 
+menuToggle.addEventListener('pointerup', (e) => {
+  if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+
+  ignoreNextMenuClick = true;
+  toggleMenu();
+});
+
+menuToggle.addEventListener('click', () => {
+  if (ignoreNextMenuClick) {
+    ignoreNextMenuClick = false;
+    return;
+  }
+
+  toggleMenu();
+});
+
+spinnerSelect.addEventListener('change', () => {
+  applySpinnerSelection(true);
+});
+
+spinnerSelect.addEventListener('input', () => {
+  applySpinnerSelection(false);
+});
+
+spinnerSelect.addEventListener('blur', () => {
+  applySpinnerSelection(false);
+});
+
+spinnerSelect.addEventListener('touchend', () => {
+  requestAnimationFrame(() => {
+    applySpinnerSelection(false);
+  });
+});
+
+document.addEventListener('pointerdown', (e) => {
+  const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
+  if (!isOpen) return;
+
+  if (!spinnerMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+    setMenuOpen(false);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    setMenuOpen(false);
+  }
+});
+
 spinBtn.addEventListener('click', () => {
   spinning = !spinning;
   spinBtn.textContent = spinning ? 'Stop' : 'Spin';
@@ -273,3 +575,5 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 setDemoMode(demoMode);
 setFidgetMode(fidgetMode);
+setMenuOpen(false);
+updateSpinnerTitle(selectedSpinner);

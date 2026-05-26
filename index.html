@@ -7,6 +7,30 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <button
+    id="menu-toggle"
+    class="menu-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="spinner-menu"
+    aria-label="Open spinner menu"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <aside id="spinner-menu" class="spinner-menu" aria-hidden="true">
+    <div class="spinner-menu-header">
+      <p class="spinner-menu-kicker">Spinner Library</p>
+      <h2>Choose a spinner</h2>
+    </div>
+    <label for="spinner-select" class="spinner-select-label">Spinner style</label>
+    <select id="spinner-select" class="spinner-select">
+      <option value="spiral">Spiral</option>
+      <option value="yin-yang" selected>Yin-Yang</option>
+      <option value="tri-spinner">Fidget 3-Lobe</option>
+    </select>
+  </aside>
   <a
     class="github-fork-link"
     href="https://github.com/gkhays/yy-spinner"
@@ -16,7 +40,7 @@
   >
     Fork me on GitHub
   </a>
-  <h1>Yin-Yang Spinner</h1>
+  <h1 id="spinner-title">Yin-Yang Spinner</h1>
   <canvas id="yy-canvas" width="400" height="400"></canvas>
   <div class="controls">
     <div class="controls-row controls-row-fidget">
