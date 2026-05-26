@@ -32,6 +32,6 @@ A simple JavaScript web app that draws a Yin and Yang symbol on a canvas. Click 
 ## License
 MIT
 
-## Acknowledgements
+### Acknowledgements
 
 https://youtube.com/shorts/COAGSB5dCBE?si=oPKNRMntsAcfOhKt

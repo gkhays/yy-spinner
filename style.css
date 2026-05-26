@@ -6,10 +6,45 @@ body {
   margin: 0;
   min-height: 100dvh;
   padding: clamp(12px, 4vw, 24px);
+  padding-top: calc(clamp(12px, 4vw, 24px) + 56px);
   padding-bottom: calc(clamp(12px, 4vw, 24px) + env(safe-area-inset-bottom));
   font-family: Arial, sans-serif;
   text-align: center;
   background: #eeecea;
+}
+
+.github-fork-link {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(25, 31, 35, 0.18);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #171515, #2f3c44);
+  box-shadow: 0 10px 24px rgba(23, 21, 21, 0.16);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.github-fork-link:hover,
+.github-fork-link:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(23, 21, 21, 0.22);
+  background: linear-gradient(135deg, #24292f, #485761);
+}
+
+.github-fork-link:focus-visible {
+  outline: 3px solid rgba(36, 41, 47, 0.2);
+  outline-offset: 3px;
 }
 
 h1 {
@@ -114,6 +149,17 @@ input[type='radio'] {
 }
 
 @media (max-width: 640px) {
+  body {
+    padding-top: calc(clamp(12px, 4vw, 24px) + 64px);
+  }
+
+  .github-fork-link {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    min-height: 44px;
+  }
+
   .controls-row {
     width: 100%;
     justify-content: space-between;
