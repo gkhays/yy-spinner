@@ -42,14 +42,14 @@ function getSelectedSpinnerValue() {
   return (selectedOption && selectedOption.value) || spinnerSelect.value || selectedSpinner;
 }
 
-function getSelectedSpinnerLabel() {
-  const selectedOption = spinnerSelect.options[spinnerSelect.selectedIndex];
-  const fallbackLabel = selectedSpinner || 'Spinner';
-  return (selectedOption && selectedOption.textContent && selectedOption.textContent.trim()) || fallbackLabel;
+function getSpinnerLabelByValue(value) {
+  const match = Array.from(spinnerSelect.options).find((option) => option.value === value);
+  const fallbackLabel = value || 'Spinner';
+  return (match && match.textContent && match.textContent.trim()) || fallbackLabel;
 }
 
-function updateSpinnerTitle() {
-  const label = getSelectedSpinnerLabel();
+function updateSpinnerTitle(spinnerValue = selectedSpinner) {
+  const label = getSpinnerLabelByValue(spinnerValue);
   const titleText = `${label} Spinner`;
 
   if (spinnerTitle) {
@@ -59,12 +59,18 @@ function updateSpinnerTitle() {
   document.title = titleText;
 }
 
+function syncSpinnerUiFromSelection() {
+  selectedSpinner = getSelectedSpinnerValue();
+  updateSpinnerTitle(selectedSpinner);
+  drawCurrentSpinner();
+}
+
 function applySpinnerSelection(closeMenu = false) {
   const nextSpinner = getSelectedSpinnerValue();
   const hasChanged = nextSpinner !== selectedSpinner;
 
   selectedSpinner = nextSpinner;
-  updateSpinnerTitle();
+  updateSpinnerTitle(selectedSpinner);
 
   if (hasChanged || !spinning) {
     drawCurrentSpinner();
@@ -74,10 +80,11 @@ function applySpinnerSelection(closeMenu = false) {
     setMenuOpen(false);
     // iOS can commit select value after the event microtask; redraw once more next frame.
     requestAnimationFrame(() => {
-      selectedSpinner = getSelectedSpinnerValue();
-      updateSpinnerTitle();
-      drawCurrentSpinner();
+      syncSpinnerUiFromSelection();
     });
+    // Some iPhone Safari versions commit picker values after additional delay.
+    setTimeout(syncSpinnerUiFromSelection, 120);
+    setTimeout(syncSpinnerUiFromSelection, 280);
   }
 }
 
@@ -341,10 +348,9 @@ function setMenuOpen(isOpen) {
 
   if (!isOpen) {
     requestAnimationFrame(() => {
-      selectedSpinner = getSelectedSpinnerValue();
-      updateSpinnerTitle();
-      drawCurrentSpinner();
+      syncSpinnerUiFromSelection();
     });
+    setTimeout(syncSpinnerUiFromSelection, 120);
   }
 }
 
@@ -508,6 +514,10 @@ spinnerSelect.addEventListener('input', () => {
   applySpinnerSelection(false);
 });
 
+spinnerSelect.addEventListener('blur', () => {
+  applySpinnerSelection(false);
+});
+
 spinnerSelect.addEventListener('touchend', () => {
   requestAnimationFrame(() => {
     applySpinnerSelection(false);
@@ -566,4 +576,4 @@ window.addEventListener('resize', resizeCanvas);
 setDemoMode(demoMode);
 setFidgetMode(fidgetMode);
 setMenuOpen(false);
-updateSpinnerTitle();
+updateSpinnerTitle(selectedSpinner);
