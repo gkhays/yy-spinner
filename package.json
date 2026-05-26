@@ -1,0 +1,15 @@
+{
+  "name": "yy-spinner",
+  "version": "1.0.0",
+  "description": "A simple JavaScript app that draws and spins a Yin-Yang symbol on a canvas with RPM control.",
+  "main": "main.js",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build step required'"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}

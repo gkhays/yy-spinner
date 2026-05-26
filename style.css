@@ -1,0 +1,27 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #eeecea;
+}
+
+h1 {
+  margin-top: 24px;
+}
+
+canvas {
+  background: transparent;
+  margin: 24px auto;
+  display: block;
+}
+
+.controls {
+  margin: 16px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+#rpm-slider {
+  width: 120px;
+}
