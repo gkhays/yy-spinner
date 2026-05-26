@@ -18,6 +18,8 @@ body {
   top: 16px;
   right: 16px;
   z-index: 10;
+  -webkit-appearance: none;
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +34,16 @@ body {
   font-weight: 700;
   letter-spacing: 0.01em;
   text-decoration: none;
+  -webkit-text-fill-color: #fff;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.github-fork-link:link,
+.github-fork-link:visited,
+.github-fork-link:active {
+  color: #fff;
+  text-decoration: none;
 }
 
 .github-fork-link:hover,
