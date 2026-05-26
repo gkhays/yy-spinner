@@ -100,6 +100,75 @@ canvas {
   justify-content: center;
 }
 
+.controls-row-fidget {
+  justify-content: center;
+}
+
+.switch-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.switch-control input[type='checkbox'] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  width: 52px;
+  height: 30px;
+  margin: 0;
+  border-radius: 999px;
+  background: #b9b7b5;
+  border: 1px solid #9f9d9b;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease;
+}
+
+.switch-control input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.2);
+  transition: transform 180ms ease;
+}
+
+.switch-control input[type='checkbox']:checked {
+  background: #34c759;
+  border-color: #2faa4a;
+}
+
+.switch-control input[type='checkbox']:checked::before {
+  transform: translateX(22px);
+}
+
+.switch-control input[type='checkbox']:focus-visible {
+  outline: 3px solid rgba(36, 41, 47, 0.25);
+  outline-offset: 2px;
+}
+
+.switch-label {
+  font-weight: 600;
+}
+
+.controls.fidget-mode-active .controls-row-hideable {
+  display: none;
+}
+
+.controls.fidget-mode-active #spin-btn {
+  display: none;
+}
+
+body.fidget-mode #yy-canvas {
+  touch-action: none;
+}
+
 .control-inline {
   display: inline-flex;
   align-items: center;
@@ -149,6 +218,27 @@ canvas {
   width: 4ch;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.rpm-led-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rpm-led-value {
+  display: inline-block;
+  min-width: 4.2ch;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #0f6f35;
+  background: linear-gradient(180deg, #082514 0%, #03130a 100%);
+  box-shadow: inset 0 1px 0 rgba(158, 255, 196, 0.18), 0 0 10px rgba(35, 242, 118, 0.28);
+  color: #8cffab;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 7px rgba(140, 255, 171, 0.5);
 }
 
 #spin-btn,

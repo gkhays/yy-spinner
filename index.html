@@ -19,10 +19,16 @@
   <h1>Yin-Yang Spinner</h1>
   <canvas id="yy-canvas" width="400" height="400"></canvas>
   <div class="controls">
-    <div class="controls-row controls-row-primary">
-      <label for="demo-toggle" class="control-inline">
-        <input type="checkbox" id="demo-toggle" checked>
-        Demo
+    <div class="controls-row controls-row-fidget">
+      <label for="fidget-toggle" class="switch-control" aria-label="Toggle fidget mode">
+        <input type="checkbox" id="fidget-toggle" role="switch" aria-label="Fidget mode">
+        <span class="switch-label">Fidget mode</span>
+      </label>
+    </div>
+    <div class="controls-row controls-row-primary controls-row-hideable">
+      <label for="demo-toggle" class="switch-control" aria-label="Toggle auto mode">
+        <input type="checkbox" id="demo-toggle" checked role="switch" aria-label="Auto">
+        <span class="switch-label">Auto</span>
       </label>
       <fieldset class="fps-group" aria-label="Frames per second">
         <legend>FPS</legend>
@@ -39,11 +45,11 @@
     <div class="controls-row controls-row-secondary">
       <button id="spin-btn">Spin</button>
       <div class="metrics">
-        <label for="rpm-slider">RPM: <span id="rpm-value">22</span></label>
-        <span>Degrees/frame: <span id="degrees-per-frame-value">2.20</span></span>
+        <label for="rpm-slider" class="rpm-led-label">RPM: <span id="rpm-value" class="rpm-led-value">22</span></label>
+        <span class="rpm-led-label">°/frame: <span id="degrees-per-frame-value" class="rpm-led-value">2.20</span></span>
       </div>
     </div>
-    <div class="controls-row controls-row-slider">
+    <div class="controls-row controls-row-slider controls-row-hideable">
       <input type="range" id="rpm-slider" min="2.2" max="360" step="0.1" value="2.2">
     </div>
   </div>
